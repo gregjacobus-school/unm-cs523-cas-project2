@@ -3,11 +3,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import random
 
 from pymds import DistanceMatrix
 
-from antibody import Antibody
-from util import hamming_distance, levenshtein_distance
+try:
+    from antibody_map.antibody import Antibody
+except:
+    from antibody import Antibody
+
+try:
+    from antibody_map.util import hamming_distance, levenshtein_distance
+except:
+    from util import levenshtein_distance
 
 # Assume antibodies can be 6-8 amino acids
 def get_antibodies():
@@ -15,36 +23,39 @@ def get_antibodies():
     antibodies = list()
     for i in range(10):
         antibody = Antibody()
-        antibody.label = str(i)
+        antibody.generation = str(i)
         antibodies.append(antibody)
     return antibodies
 
 def get_distance_matrix(antibody_list):
-    distance_matrix = list()
-    for i in range(len(antibody_list)):
-        distance_matrix.append([])
-        for j in range(len(antibody_list)):
-            distance_matrix[i].append(0)
+    print(f"Generating map for best {len(antibody_list)} evolved antibodies")
+    size = len(antibody_list)
+    distance_matrix = np.zeros((size, size))
     for idx1, e1 in enumerate(antibody_list, start=0):
         for idx2, e2 in enumerate(antibody_list, start=0):
-            if idx1 == idx2:
-                continue
+            if idx1 <= idx2:
+                continue # just solve the bottom half then copy since we're symmetric
             distance_matrix[idx1][idx2] = levenshtein_distance(e1, e2)
-    return np.array(distance_matrix)
+    return np.triu(distance_matrix.T,1) + distance_matrix
 
 def _get_color_from_variant(variant):
-    if variant == "Alpha":
-        return "red"
-    elif variant == "Delta":
-        return "blue"
+    if type(variant) == int:
+        colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple",
+                "tab:brown", "tab:pink", "tab:gray", "tab:olive", "tab:cyan"]
+        return colors[variant]
     else:
-        return "green"
+        if variant == "Alpha":
+            return "red"
+        elif variant == "Delta":
+            return "blue"
+        else:
+            return "green"
 
 def create_map(antibody_list):
     dist_matrix = get_distance_matrix(antibody_list)
-    print(dist_matrix)
     df = pd.DataFrame(dist_matrix)
     dm = DistanceMatrix(df)
+    print("Solving dimensionality reduction...")
     projection = dm.optimize(n=2)
     coords = projection.coords.iterrows()
     # pymds creates a plot for us, so we're going to get the points, clear it, and
@@ -52,8 +63,11 @@ def create_map(antibody_list):
     plt.cla()
     for points, antibody in zip(coords, antibody_list):
         x, y = points[1][0], points[1][1]
-        plt.scatter(x, y, color=_get_color_from_variant(antibody.evolved_against))
-        plt.annotate(antibody.label, xy=(x, y), xytext=(1,1), textcoords="offset points")
+        plt.scatter(x, y, color=_get_color_from_variant(antibody.evolved_against), s=10)
+        plt.grid(True)
+        if random.uniform(0, 1) > 0.8:
+            plt.annotate(f"{antibody.germinal_center_id}:{antibody.generation}", 
+                    xy=(x, y), xytext=(1,1), textcoords="offset points")
     plt.show()
 
 def main():

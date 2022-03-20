@@ -7,8 +7,9 @@ from typing import Optional
 class Antibody:
     bit_string: Optional[str] = ""
     base_sting: Optional[str] = ""
+    germinal_center_id: Optional[str] = ""
+    generation: Optional[str] = ""
     evolved_against: Optional[str] = ""
-    label: Optional[str] = ""
 
     def __iter__(self):
         for c in self.bit_string:

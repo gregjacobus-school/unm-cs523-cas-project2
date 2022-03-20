@@ -12,6 +12,10 @@ class GerminalCenter():
         self._init_antibodies()
         self.epitope_inds = None
         self.refresh()
+        # Track which virus variant is currently being trained against
+        self.variant = None
+        # dict of type {variant: [best of gen1, best of gen2, ...]
+        self.best_evolved = dict()
 
     def refresh(self):
         self.epitopes = self._gen_epitopes(EPITOPES_PER_ANTIGEN)
@@ -65,6 +69,12 @@ class GerminalCenter():
         #Pick the top X performing antibodies to clone/mutate
         num_to_keep = int(ANTIBODY_CLONE_PCT * NUM_ANTIBODIES)
         bests = tools.selBest(self.antibodies, k=num_to_keep)
+
+        # save the best off
+        if self.variant not in self.best_evolved:
+            self.best_evolved[self.variant] = list()
+        self.best_evolved[self.variant].extend(bests)
+
         next_gen = []
         for best in bests:
             num_clones_per = int(NUM_ANTIBODIES / num_to_keep) - 1

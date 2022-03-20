@@ -8,6 +8,9 @@ from src.generators import gen_antigen, gen_antibody
 from src.germinal_center import GerminalCenter
 from src.constants import *
 
+from antibody_map.antibody import Antibody
+from antibody_map.create_map import create_map
+
 '''
 virus HAS antigens
 antigens HAVE epitopes
@@ -75,23 +78,46 @@ def fight_virus(gc):
             break
     print(f"\t\ttook {t} timesteps to converge")
 
+def create_antibody_map(gcs):
+    antibodies = list()
+    for gc_id, gc in enumerate(gcs):
+        for variant, bit_arrays in gc.best_evolved.items():
+            for generation, bit_array in enumerate(bit_arrays):
+                antibody = Antibody(
+                        bit_string="".join([str(i) for i in bit_array]), 
+                        germinal_center_id=gc_id,
+                        generation=generation,
+                        evolved_against=variant
+                    )
+                antibodies.append(antibody)
+    print(len(antibodies))
+    print(antibodies[0])
+    create_map(antibodies)
 
-for gc_num, gc in enumerate(gcs):
-    print(f"GC {gc_num}:")
+def main():
+    for gc_num, gc in enumerate(gcs):
+        print(f"GC {gc_num}:")
+        for variant in range(NUM_VIRUS_VARIANTS):
+            print(f"\tVirus {variant}:")
+            gc.variant = variant
+            fight_virus(gc)
+            mutate(gc.antigen)
+            gc.refresh()
+    
+    create_antibody_map(gcs)
+
+    # map best from each germinal center
+    merged_antibodies = []
+    for gc in gcs:
+        merged_antibodies.extend(gc.antibodies)
+
+    super_gc = GerminalCenter(toolbox, antigen, merged_antibodies)
+    print("SUPER GC:")
     for variant in range(NUM_VIRUS_VARIANTS):
         print(f"\tVirus {variant}:")
         fight_virus(gc)
         mutate(gc.antigen)
         gc.refresh()
 
-merged_antibodies = []
-for gc in gcs:
-    merged_antibodies.extend(gc.antibodies)
-
-super_gc = GerminalCenter(toolbox, antigen, merged_antibodies)
-print("SUPER GC:")
-for variant in range(NUM_VIRUS_VARIANTS):
-    print(f"\tVirus {variant}:")
-    fight_virus(gc)
-    mutate(gc.antigen)
-    gc.refresh()
+if __name__ == "__main__":
+    main()
