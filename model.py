@@ -63,6 +63,8 @@ def mutate(virus):
             virus[ind] = 0
 
 gcs = [GerminalCenter(toolbox, antigen, toolbox.antibodies(n=NUM_ANTIBODIES)) for antigen in antigens]
+antigen = antigens[0]
+gcs = [GerminalCenter(toolbox, antigen, toolbox.antibodies(n=NUM_ANTIBODIES)) for _ in range(ANTIGENS_PER_VIRUS)]
 
 def fight_virus(gc):
     t = 0
@@ -71,12 +73,25 @@ def fight_virus(gc):
         done = gc.evolve()
         if done:
             break
-    print(f"\ttook {t} timesteps to converge")
+    print(f"\t\ttook {t} timesteps to converge")
 
 
-for gc in gcs:
+for gc_num, gc in enumerate(gcs):
+    print(f"GC {gc_num}:")
     for variant in range(NUM_VIRUS_VARIANTS):
-        print(f"Virus {variant}:")
+        print(f"\tVirus {variant}:")
         fight_virus(gc)
         mutate(gc.antigen)
         gc.refresh()
+
+merged_antibodies = []
+for gc in gcs:
+    merged_antibodies.extend(gc.antibodies)
+
+super_gc = GerminalCenter(toolbox, antigen, merged_antibodies)
+print("SUPER GC:")
+for variant in range(NUM_VIRUS_VARIANTS):
+    print(f"\tVirus {variant}:")
+    fight_virus(gc)
+    mutate(gc.antigen)
+    gc.refresh()

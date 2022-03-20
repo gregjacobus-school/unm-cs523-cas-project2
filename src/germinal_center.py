@@ -57,10 +57,8 @@ class GerminalCenter():
                 some_did_not_bind = True
 
         if not some_did_not_bind:
-            print(f"\tBound to {len(epitopes_recognized)} different epitopes")
+            print(f"\t\tBound to {len(epitopes_recognized)} different epitopes")
             return True
-        #if num_bound > 0:
-            #print(f"{num_bound} bounded")
 
         next_gen = []
 
@@ -75,7 +73,7 @@ class GerminalCenter():
                 clone = self.toolbox.clone(best)
                 self._mutate(clone)
                 next_gen.append(clone)
-        assert len(next_gen) == NUM_ANTIBODIES, f"expected {NUM_ANTIBODIES} antibodies, had {len(next_gen)}"
+        #assert len(next_gen) == NUM_ANTIBODIES, f"expected {NUM_ANTIBODIES} antibodies, had {len(next_gen)}"
         self.antibodies = next_gen
         return False
 
