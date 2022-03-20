@@ -33,7 +33,7 @@ evolve the virus:
     see how long this takes
 '''
 
-#TODO weights correct? what are these for?
+#Trying to minimize the hamming distance of antibodies from the virus
 creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
 creator.create("Virus", list)
 creator.create("Antigen", list)
@@ -52,10 +52,31 @@ toolbox.register("init_antibody_fitness", lambda x: (0,))
 
 antigens = toolbox.antigens()
 
+#Modify in place
+def mutate(virus):
+    num_bits_to_mutate = int(VIRUS_MUTATION_PCT * len(virus))
+    bits_to_mutate = random.sample(list(range(len(virus))), num_bits_to_mutate)
+    for ind in bits_to_mutate:
+        if virus[ind] == 0:
+            virus[ind] = 1
+        else:
+            virus[ind] = 0
+
 gcs = [GerminalCenter(toolbox, antigen, toolbox.antibodies(n=NUM_ANTIBODIES)) for antigen in antigens]
 
-for gc in gcs:
+def fight_virus(gc):
+    t = 0
     while True:
+        t += 1
         done = gc.evolve()
         if done:
             break
+    print(f"\ttook {t} timesteps to converge")
+
+
+for gc in gcs:
+    for variant in range(NUM_VIRUS_VARIANTS):
+        print(f"Virus {variant}:")
+        fight_virus(gc)
+        mutate(gc.antigen)
+        gc.refresh()

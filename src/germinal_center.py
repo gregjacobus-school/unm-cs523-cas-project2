@@ -10,9 +10,14 @@ class GerminalCenter():
         self.antigen = antigen
         self.antibodies = antibodies
         self._init_antibodies()
+        self.epitope_inds = None
+        self.refresh()
+
+    def refresh(self):
         self.epitopes = self._gen_epitopes(EPITOPES_PER_ANTIGEN)
 
     def _init_antibodies(self):
+        #Initialize fitness values
         for i in range(len(self.antibodies)):
             self.antibodies[i].fitness.values = self.toolbox.init_antibody_fitness(self.antibodies[i])
 
@@ -52,11 +57,10 @@ class GerminalCenter():
                 some_did_not_bind = True
 
         if not some_did_not_bind:
-            print("All binded!")
-            print(f"Bound to {len(epitopes_recognized)}")
+            print(f"\tBound to {len(epitopes_recognized)} different epitopes")
             return True
-        if num_bound > 0:
-            print(f"{num_bound} bounded")
+        #if num_bound > 0:
+            #print(f"{num_bound} bounded")
 
         next_gen = []
 
@@ -72,7 +76,6 @@ class GerminalCenter():
                 self._mutate(clone)
                 next_gen.append(clone)
         assert len(next_gen) == NUM_ANTIBODIES, f"expected {NUM_ANTIBODIES} antibodies, had {len(next_gen)}"
-        random.shuffle(next_gen)
         self.antibodies = next_gen
         return False
 
@@ -85,11 +88,16 @@ class GerminalCenter():
             clone[ind] = 0
     
     def _gen_epitopes(self, num_epitopes):
+        length_choices = [36, 42, 48]
+        if self.epitope_inds is None:
+            self.epitope_inds = []
+            for _ in range(num_epitopes):
+                epitope_len = random.choice(length_choices)
+                start_ind = random.randint(0, len(self.antigen) - epitope_len)
+                end_ind = start_ind + epitope_len
+                self.epitope_inds.append((start_ind, end_ind))
         epitopes = []
-        for _ in range(num_epitopes):
-            length_choices = [36, 42, 48]
-            epitope_len = random.choice(length_choices)
-            start_ind = random.randint(0, len(self.antigen) - epitope_len)
-            epitope = self.antigen[start_ind : start_ind + epitope_len]
+        for start_ind, end_ind in self.epitope_inds:
+            epitope = self.antigen[start_ind : end_ind]
             epitopes.append(epitope)
         return epitopes
