@@ -2,6 +2,7 @@ import random
 from src.constants import *
 from scipy.spatial.distance import hamming
 from deap import tools
+import sys
 
 class GerminalCenter():
     def __init__(self, toolbox, antigen, antibodies):
@@ -29,22 +30,30 @@ class GerminalCenter():
         #Each antibody tries to bind to an epitope
         some_did_not_bind = False
         num_bound = 0
+        epitopes_recognized = set()
         for antibody in self.antibodies:
             #Try to bind
-            epitope = random.choice(self.epitopes)
-            did_bind, dist = self._bind(antibody, epitope)
-            if did_bind:
-                fit = antibody.fitness.values
-                #new_fit = (fit[0]+1,)
-                new_fit = (dist,)
-                antibody.fitness.values = new_fit
-                print(antibody.fitness.values)
-                num_bound += 1
-            else:
+            min_dist = sys.maxsize
+            bound = False
+            for i, epitope in enumerate(self.epitopes):
+                #epitope = random.choice(self.epitopes)
+                did_bind, dist = self._bind(antibody, epitope)
+                if dist < min_dist:
+                    min_dist = dist
+                    fit = antibody.fitness.values
+                    new_fit = (dist,)
+                    antibody.fitness.values = new_fit
+                    ep_ind = i
+                if did_bind:
+                    epitopes_recognized.add(i)
+                    num_bound += 1
+                    bound = True
+            if not bound:
                 some_did_not_bind = True
 
         if not some_did_not_bind:
             print("All binded!")
+            print(f"Bound to {len(epitopes_recognized)}")
             return True
         if num_bound > 0:
             print(f"{num_bound} bounded")
