@@ -1,3 +1,6 @@
+def hamming_distance(s1, s2):
+    return sum(c1 != c2 for c1, c2 in zip(s1, s2))
+
 def levenshtein_distance(s1, s2):
     """From https://stackoverflow.com/a/32558749"""
     if len(s1) > len(s2):
