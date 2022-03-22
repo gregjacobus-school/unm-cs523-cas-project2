@@ -35,6 +35,7 @@ evolve the virus:
     seed with antibodies from previous virus
     see how long this takes
 '''
+random.seed(12345)
 
 #Trying to minimize the hamming distance of antibodies from the virus
 creator.create("FitnessMin", base.Fitness, weights=(-1.0,))

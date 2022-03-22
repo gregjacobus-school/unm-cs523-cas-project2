@@ -1,0 +1,6 @@
+deap
+scipy
+tqdm
+matplotlib
+pandas
+pymds

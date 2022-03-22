@@ -62,6 +62,7 @@ class GerminalCenter():
 
         if not some_did_not_bind:
             print(f"\t\tBound to {len(epitopes_recognized)} different epitopes")
+            print(f"\t\tEpitopes bound: {epitopes_recognized}")
             return True
 
         next_gen = []
