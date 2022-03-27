@@ -1,9 +1,12 @@
 #! /usr/bin/env python3
 
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 import random
+import os
+from src.constants import *
 
 from pymds import DistanceMatrix
 
@@ -51,7 +54,8 @@ def _get_color_from_variant(variant):
         else:
             return "green"
 
-def create_map(antibody_list):
+def create_map(antibody_list, gc_num):
+    os.makedirs('./output', exist_ok=True)
     dist_matrix = get_distance_matrix(antibody_list)
     df = pd.DataFrame(dist_matrix)
     dm = DistanceMatrix(df)
@@ -63,12 +67,22 @@ def create_map(antibody_list):
     plt.cla()
     for points, antibody in zip(coords, antibody_list):
         x, y = points[1][0], points[1][1]
-        plt.scatter(x, y, color=_get_color_from_variant(antibody.evolved_against), s=10)
+        variant = antibody.evolved_against
+        plt.scatter(x, y, color=_get_color_from_variant(variant), s=10)
         plt.grid(True)
+        '''
         if random.uniform(0, 1) > 0.8:
             plt.annotate(f"{antibody.germinal_center_id}:{antibody.generation}", 
                     xy=(x, y), xytext=(1,1), textcoords="offset points")
-    plt.show()
+        '''
+    #plt.show()
+    handles = []
+    for variant in range(NUM_VIRUS_VARIANTS):
+        color = _get_color_from_variant(variant)
+        patch = mpatches.Patch(color=color, label=f'Variant {variant}')
+        handles.append(patch)
+    plt.legend(handles=handles)
+    plt.savefig(f'output/antibody_map-gc-{gc_num}.eps')
 
 def main():
     ab = antibodies = get_antibodies()

@@ -80,8 +80,8 @@ def fight_virus(gc):
     print(f"\t\ttook {t} timesteps to converge")
 
 def create_antibody_map(gcs):
-    antibodies = list()
     for gc_id, gc in enumerate(gcs):
+        antibodies = list()
         for variant, bit_arrays in gc.best_evolved.items():
             for generation, bit_array in enumerate(bit_arrays):
                 antibody = Antibody(
@@ -91,9 +91,7 @@ def create_antibody_map(gcs):
                         evolved_against=variant
                     )
                 antibodies.append(antibody)
-    print(len(antibodies))
-    print(antibodies[0])
-    create_map(antibodies)
+        create_map(antibodies, gc_id)
 
 def main():
     for gc_num, gc in enumerate(gcs):
