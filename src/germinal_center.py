@@ -26,7 +26,6 @@ class GerminalCenter():
             self.antibodies[i].fitness.values = self.toolbox.init_antibody_fitness(self.antibodies[i])
 
     def _bind(self, antibody, epitope):
-        #FIXME do better when they have different lengths
         if len(antibody) != len(epitope):
             return False, 9999999
         dist = hamming(antibody, epitope)
