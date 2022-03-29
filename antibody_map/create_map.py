@@ -81,7 +81,12 @@ def create_map(antibody_list, gc_num):
         color = _get_color_from_variant(variant)
         patch = mpatches.Patch(color=color, label=f'Variant {variant}')
         handles.append(patch)
-    plt.legend(handles=handles)
+    plt.legend(handles=handles, prop={'size': 14})
+    #plt.xlabel("Levenshtein Distance", fontsize=20)
+    #plt.ylabel("Levenshtein Distance", fontsize=20)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    plt.title(f"Antibody Evolution for Germinal Center {gc_num}", fontsize=20)
     plt.savefig(f'output/antibody_map-gc-{gc_num}.eps')
 
 def main():
